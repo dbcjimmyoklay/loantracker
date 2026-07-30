@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>借款還款進度追蹤</title>
+<style>
+  :root{
+    --bg:#0f1115;
+    --card:#171a21;
+    --border:#262b35;
+    --text:#e8eaed;
+    --muted:#8a919e;
+    --accent:#4f8cff;
+    --good:#3ecf8e;
+    --danger:#ff6b6b;
+    --purple:#b48cff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Microsoft JhengHei",sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    padding:24px 16px 50px;
+  }
+  .wrap{max-width:880px;margin:0 auto;}
+  .headrow{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+  h1{font-size:20px;margin:0 0 4px;font-weight:600;}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:22px;}
+  .lock-btn{
+    font-size:11.5px;color:var(--muted);background:var(--card);border:1px solid var(--border);
+    border-radius:8px;padding:6px 10px;cursor:pointer;white-space:nowrap;flex-shrink:0;
+  }
+  .lock-btn.unlocked{color:var(--good);border-color:rgba(62,207,142,.35);}
+
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+  .stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+  .stat .label{color:var(--muted);font-size:12px;margin-bottom:6px;}
+  .stat .value{font-size:19px;font-weight:600;}
+  .stat .value.accent{color:var(--accent);}
+  .stat .value.good{color:var(--good);}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;}
+
+  .progress-bar-bg{width:100%;height:10px;background:#1e222b;border-radius:6px;overflow:hidden;margin-top:10px;}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--good));transition:width .4s ease;}
+  .progress-text{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px;}
+  .row-top{display:flex;justify-content:space-between;align-items:baseline;}
+  .row-top .title{font-size:13px;color:var(--muted);}
+  .row-top .pct{font-size:13px;font-weight:600;}
+
+  .stage1-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .stage1-banner .left{display:flex;align-items:center;gap:10px;}
+  .check-icon{
+    width:22px;height:22px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;
+  }
+  .stage1-banner .text b{color:var(--text);}
+  .stage1-banner .text{font-size:13px;color:var(--muted);line-height:1.6;}
+  .stage1-toggle{font-size:12px;color:var(--muted);cursor:pointer;text-decoration:underline;white-space:nowrap;}
+
+  .current-action{border-color:var(--accent);}
+  .current-action .tag{font-size:11px;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
+  .current-action .period-name{font-size:17px;font-weight:600;margin-bottom:4px;}
+  .current-action .period-amount{font-size:13px;color:var(--muted);line-height:1.8;margin-bottom:12px;}
+  .current-action .period-amount b{color:var(--text);}
+  .btns{display:flex;gap:8px;flex-wrap:wrap;}
+  .mark-btn{
+    background:var(--accent);color:#fff;border:none;border-radius:8px;
+    padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;
+  }
+  .mark-btn.cash{background:var(--purple);}
+  .mark-btn.done{background:rgba(62,207,142,0.12);color:var(--good);border:1px solid rgba(62,207,142,.35);cursor:default;}
+  .all-done-msg{font-size:14px;color:var(--good);font-weight:600;}
+  .viewonly-note{font-size:12px;color:var(--muted);}
+
+  .account-note{font-size:12px;color:var(--muted);}
+  .account-note b{color:var(--text);}
+
+  .section-title{font-size:13px;color:var(--muted);margin:22px 0 8px;}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  thead th{text-align:left;color:var(--muted);font-weight:500;padding:8px 7px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--card);white-space:nowrap;}
+  tbody td{padding:8px 7px;border-bottom:1px solid var(--border);white-space:nowrap;}
+  tbody tr.paid{background:rgba(62,207,142,0.05);}
+  tbody tr.overdue{background:rgba(255,107,107,0.07);}
+  .num{text-align:right;font-variant-numeric:tabular-nums;}
+
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:11.5px;font-weight:500;border:1px solid transparent;user-select:none;}
+  .badge.clickable{cursor:pointer;}
+  .badge.paid{background:rgba(62,207,142,0.15);color:var(--good);border-color:rgba(62,207,142,.3);}
+  .badge.unpaid{background:rgba(138,145,158,0.1);color:var(--muted);border-color:var(--border);}
+  .badge.overdue{background:rgba(255,107,107,0.15);color:var(--danger);border-color:rgba(255,107,107,.3);}
+  .badge.cash-paid{background:rgba(180,140,255,0.15);color:var(--purple);border-color:rgba(180,140,255,.35);}
+
+  .table-scroll{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:4px 10px;max-height:520px;overflow:auto;}
+  .sync-tag{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px;margin-top:8px;}
+  .dot{width:5px;height:5px;border-radius:50%;background:var(--good);}
+  .footer-note{margin-top:20px;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.7;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="headrow">
+    <div>
+      <h1>借款還款進度追蹤</h1>
+      <div class="sub">本金 1,800萬元 · 年利率 2% · 目前為唯讀檢視畫面</div>
+    </div>
+    <button class="lock-btn" id="lockBtn">🔒 編輯</button>
+  </div>
+
+  <div class="grid" id="statGrid"></div>
+
+  <div class="card">
+    <div class="row-top">
+      <div class="title">本息期進度（48 期）</div>
+      <div class="pct" id="progressPct"></div>
+    </div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:0%;"></div></div>
+    <div class="progress-text"><span id="progressLeft"></span><span id="progressRight"></span></div>
+    <div class="sync-tag"><span class="dot"></span><span id="syncStatus">已同步</span></div>
+  </div>
+
+  <div class="card current-action" id="currentAction"></div>
+
+  <div class="card stage1-banner">
+    <div class="left">
+      <div class="check-icon" id="stage1Icon">✓</div>
+      <div class="text" id="stage1Text"></div>
+    </div>
+    <div class="stage1-toggle" id="stage1Toggle" style="display:none;">標示為未還清</div>
+  </div>
+
+  <div class="card account-note">
+    每期應繳金額拆為兩部分：<b>30,000 元</b> 匯款至合庫帳戶 <b>0180765308109</b>；其餘領現金保管，累積至 <b>2027/05/01</b> 前直接帶現金當面歸還。
+  </div>
+
+  <div class="section-title">本息期明細（2026/08/01 起，共 48 期）</div>
+  <div class="table-scroll">
+    <table id="scheduleTable">
+      <thead>
+        <tr><th>期</th><th>日期</th><th class="num">應繳</th><th>匯款 30,000</th><th>現金</th></tr>
+      </thead>
+      <tbody id="scheduleBody"></tbody>
+    </table>
+  </div>
+
+  <div class="footer-note">資料存放於 Google 試算表，任何人開啟此連結皆可查看最新進度，不需要安裝任何 App。</div>
+</div>
+
+<script>
+const stage1 = [{"period": 1, "date": "2025-07-01", "amount": 30000}, {"period": 2, "date": "2025-08-01", "amount": 30000}, {"period": 3, "date": "2025-09-01", "amount": 30000}, {"period": 4, "date": "2025-10-01", "amount": 30000}, {"period": 5, "date": "2025-11-01", "amount": 30000}, {"period": 6, "date": "2025-12-01", "amount": 30000}, {"period": 7, "date": "2026-01-01", "amount": 30000}, {"period": 8, "date": "2026-02-01", "amount": 30000}, {"period": 9, "date": "2026-03-01", "amount": 30000}, {"period": 10, "date": "2026-04-01", "amount": 30000}, {"period": 11, "date": "2026-05-01", "amount": 30000}, {"period": 12, "date": "2026-06-01", "amount": 30000}];
+
+const stage2 = [{"period": 1, "date": "2026-08-01", "stage": "amortizing", "startBalance": 18000000, "interest": 30000, "principal": 360000, "payment": 390000, "endBalance": 17640000, "transfer": 30000, "cash": 360000}, {"period": 2, "date": "2026-09-01", "stage": "amortizing", "startBalance": 17640000, "interest": 29400, "principal": 360600, "payment": 390000, "endBalance": 17279400, "transfer": 30000, "cash": 360000}, {"period": 3, "date": "2026-10-01", "stage": "amortizing", "startBalance": 17279400, "interest": 28799, "principal": 361201, "payment": 390000, "endBalance": 16918199, "transfer": 30000, "cash": 360000}, {"period": 4, "date": "2026-11-01", "stage": "amortizing", "startBalance": 16918199, "interest": 28197, "principal": 361803, "payment": 390000, "endBalance": 16556396, "transfer": 30000, "cash": 360000}, {"period": 5, "date": "2026-12-01", "stage": "amortizing", "startBalance": 16556396, "interest": 27594, "principal": 362406, "payment": 390000, "endBalance": 16193990, "transfer": 30000, "cash": 360000}, {"period": 6, "date": "2027-01-01", "stage": "amortizing", "startBalance": 16193990, "interest": 26990, "principal": 363010, "payment": 390000, "endBalance": 15830980, "transfer": 30000, "cash": 360000}, {"period": 7, "date": "2027-02-01", "stage": "amortizing", "startBalance": 15830980, "interest": 26385, "principal": 363615, "payment": 390000, "endBalance": 15467365, "transfer": 30000, "cash": 360000}, {"period": 8, "date": "2027-03-01", "stage": "amortizing", "startBalance": 15467365, "interest": 25779, "principal": 364221, "payment": 390000, "endBalance": 15103144, "transfer": 30000, "cash": 360000}, {"period": 9, "date": "2027-04-01", "stage": "amortizing", "startBalance": 15103144, "interest": 25172, "principal": 364828, "payment": 390000, "endBalance": 14738316, "transfer": 30000, "cash": 360000}, {"period": 10, "date": "2027-05-01", "stage": "amortizing", "startBalance": 14738316, "interest": 24564, "principal": 365436, "payment": 390000, "endBalance": 14372880, "transfer": 30000, "cash": 360000}, {"period": 11, "date": "2027-06-01", "stage": "amortizing", "startBalance": 14372880, "interest": 23955, "principal": 366045, "payment": 390000, "endBalance": 14006835, "transfer": 30000, "cash": 360000}, {"period": 12, "date": "2027-07-01", "stage": "amortizing", "startBalance": 14006835, "interest": 23345, "principal": 366655, "payment": 390000, "endBalance": 13640180, "transfer": 30000, "cash": 360000}, {"period": 13, "date": "2027-08-01", "stage": "amortizing", "startBalance": 13640180, "interest": 22734, "principal": 367266, "payment": 390000, "endBalance": 13272914, "transfer": 30000, "cash": 360000}, {"period": 14, "date": "2027-09-01", "stage": "amortizing", "startBalance": 13272914, "interest": 22122, "principal": 367878, "payment": 390000, "endBalance": 12905036, "transfer": 30000, "cash": 360000}, {"period": 15, "date": "2027-10-01", "stage": "amortizing", "startBalance": 12905036, "interest": 21508, "principal": 368492, "payment": 390000, "endBalance": 12536544, "transfer": 30000, "cash": 360000}, {"period": 16, "date": "2027-11-01", "stage": "amortizing", "startBalance": 12536544, "interest": 20894, "principal": 369106, "payment": 390000, "endBalance": 12167438, "transfer": 30000, "cash": 360000}, {"period": 17, "date": "2027-12-01", "stage": "amortizing", "startBalance": 12167438, "interest": 20279, "principal": 369721, "payment": 390000, "endBalance": 11797717, "transfer": 30000, "cash": 360000}, {"period": 18, "date": "2028-01-01", "stage": "amortizing", "startBalance": 11797717, "interest": 19663, "principal": 370337, "payment": 390000, "endBalance": 11427380, "transfer": 30000, "cash": 360000}, {"period": 19, "date": "2028-02-01", "stage": "amortizing", "startBalance": 11427380, "interest": 19046, "principal": 370954, "payment": 390000, "endBalance": 11056426, "transfer": 30000, "cash": 360000}, {"period": 20, "date": "2028-03-01", "stage": "amortizing", "startBalance": 11056426, "interest": 18427, "principal": 371573, "payment": 390000, "endBalance": 10684853, "transfer": 30000, "cash": 360000}, {"period": 21, "date": "2028-04-01", "stage": "amortizing", "startBalance": 10684853, "interest": 17808, "principal": 372192, "payment": 390000, "endBalance": 10312661, "transfer": 30000, "cash": 360000}, {"period": 22, "date": "2028-05-01", "stage": "amortizing", "startBalance": 10312661, "interest": 17188, "principal": 372812, "payment": 390000, "endBalance": 9939849, "transfer": 30000, "cash": 360000}, {"period": 23, "date": "2028-06-01", "stage": "amortizing", "startBalance": 9939849, "interest": 16566, "principal": 373434, "payment": 390000, "endBalance": 9566415, "transfer": 30000, "cash": 360000}, {"period": 24, "date": "2028-07-01", "stage": "amortizing", "startBalance": 9566415, "interest": 15944, "principal": 374056, "payment": 390000, "endBalance": 9192359, "transfer": 30000, "cash": 360000}, {"period": 25, "date": "2028-08-01", "stage": "amortizing", "startBalance": 9192359, "interest": 15321, "principal": 374679, "payment": 390000, "endBalance": 8817680, "transfer": 30000, "cash": 360000}, {"period": 26, "date": "2028-09-01", "stage": "amortizing", "startBalance": 8817680, "interest": 14696, "principal": 375304, "payment": 390000, "endBalance": 8442376, "transfer": 30000, "cash": 360000}, {"period": 27, "date": "2028-10-01", "stage": "amortizing", "startBalance": 8442376, "interest": 14071, "principal": 375929, "payment": 390000, "endBalance": 8066447, "transfer": 30000, "cash": 360000}, {"period": 28, "date": "2028-11-01", "stage": "amortizing", "startBalance": 8066447, "interest": 13444, "principal": 376556, "payment": 390000, "endBalance": 7689891, "transfer": 30000, "cash": 360000}, {"period": 29, "date": "2028-12-01", "stage": "amortizing", "startBalance": 7689891, "interest": 12816, "principal": 377184, "payment": 390000, "endBalance": 7312707, "transfer": 30000, "cash": 360000}, {"period": 30, "date": "2029-01-01", "stage": "amortizing", "startBalance": 7312707, "interest": 12188, "principal": 377812, "payment": 390000, "endBalance": 6934895, "transfer": 30000, "cash": 360000}, {"period": 31, "date": "2029-02-01", "stage": "amortizing", "startBalance": 6934895, "interest": 11558, "principal": 378442, "payment": 390000, "endBalance": 6556453, "transfer": 30000, "cash": 360000}, {"period": 32, "date": "2029-03-01", "stage": "amortizing", "startBalance": 6556453, "interest": 10927, "principal": 379073, "payment": 390000, "endBalance": 6177380, "transfer": 30000, "cash": 360000}, {"period": 33, "date": "2029-04-01", "stage": "amortizing", "startBalance": 6177380, "interest": 10296, "principal": 379704, "payment": 390000, "endBalance": 5797676, "transfer": 30000, "cash": 360000}, {"period": 34, "date": "2029-05-01", "stage": "amortizing", "startBalance": 5797676, "interest": 9663, "principal": 380337, "payment": 390000, "endBalance": 5417339, "transfer": 30000, "cash": 360000}, {"period": 35, "date": "2029-06-01", "stage": "amortizing", "startBalance": 5417339, "interest": 9029, "principal": 380971, "payment": 390000, "endBalance": 5036368, "transfer": 30000, "cash": 360000}, {"period": 36, "date": "2029-07-01", "stage": "amortizing", "startBalance": 5036368, "interest": 8394, "principal": 381606, "payment": 390000, "endBalance": 4654762, "transfer": 30000, "cash": 360000}, {"period": 37, "date": "2029-08-01", "stage": "amortizing", "startBalance": 4654762, "interest": 7758, "principal": 382242, "payment": 390000, "endBalance": 4272520, "transfer": 30000, "cash": 360000}, {"period": 38, "date": "2029-09-01", "stage": "amortizing", "startBalance": 4272520, "interest": 7121, "principal": 382879, "payment": 390000, "endBalance": 3889641, "transfer": 30000, "cash": 360000}, {"period": 39, "date": "2029-10-01", "stage": "amortizing", "startBalance": 3889641, "interest": 6483, "principal": 383517, "payment": 390000, "endBalance": 3506124, "transfer": 30000, "cash": 360000}, {"period": 40, "date": "2029-11-01", "stage": "amortizing", "startBalance": 3506124, "interest": 5844, "principal": 384156, "payment": 390000, "endBalance": 3121968, "transfer": 30000, "cash": 360000}, {"period": 41, "date": "2029-12-01", "stage": "amortizing", "startBalance": 3121968, "interest": 5203, "principal": 384797, "payment": 390000, "endBalance": 2737171, "transfer": 30000, "cash": 360000}, {"period": 42, "date": "2030-01-01", "stage": "amortizing", "startBalance": 2737171, "interest": 4562, "principal": 385438, "payment": 390000, "endBalance": 2351733, "transfer": 30000, "cash": 360000}, {"period": 43, "date": "2030-02-01", "stage": "amortizing", "startBalance": 2351733, "interest": 3920, "principal": 386080, "payment": 390000, "endBalance": 1965653, "transfer": 30000, "cash": 360000}, {"period": 44, "date": "2030-03-01", "stage": "amortizing", "startBalance": 1965653, "interest": 3276, "principal": 386724, "payment": 390000, "endBalance": 1578929, "transfer": 30000, "cash": 360000}, {"period": 45, "date": "2030-04-01", "stage": "amortizing", "startBalance": 1578929, "interest": 2632, "principal": 387368, "payment": 390000, "endBalance": 1191561, "transfer": 30000, "cash": 360000}, {"period": 46, "date": "2030-05-01", "stage": "amortizing", "startBalance": 1191561, "interest": 1986, "principal": 388014, "payment": 390000, "endBalance": 803547, "transfer": 30000, "cash": 360000}, {"period": 47, "date": "2030-06-01", "stage": "amortizing", "startBalance": 803547, "interest": 1339, "principal": 388661, "payment": 390000, "endBalance": 414886, "transfer": 30000, "cash": 360000}, {"period": 48, "date": "2030-07-01", "stage": "amortizing", "startBalance": 414886, "interest": 691, "principal": 414886, "payment": 415577, "endBalance": 0, "transfer": 30000, "cash": 385577}];
+
+const PRINCIPAL = 18000000;
+const EDIT_PIN = '0701'; // 編輯密碼，跟 Apps Script 裡的 PIN 要一致
+const API_URL = 'https://script.google.com/macros/s/AKfycbz04PwUk-qyD-cs-ltIyw07MKaor_gqCY0GKe3JigtbLf-zUMHBLL6oaFL9rcJ_z9Ek/exec';
+
+function fmt(n){ return 'NT$' + Math.round(n).toLocaleString('en-US'); }
+function fmtDate(iso){
+  const d = new Date(iso+'T00:00:00');
+  return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');
+}
+
+let status = { stage1Done: true };
+let editMode = false;
+let loaded = false;
+
+function toggleLock(){
+  if(editMode){
+    editMode = false;
+  } else {
+    const input = window.prompt('請輸入編輯密碼');
+    if(input === null) return;
+    if(input === EDIT_PIN){
+      editMode = true;
+    } else {
+      alert('密碼錯誤');
+      return;
+    }
+  }
+  updateLockUI();
+  render();
+}
+
+function updateLockUI(){
+  const btn = document.getElementById('lockBtn');
+  const sub = document.querySelector('.sub');
+  if(editMode){
+    btn.textContent = '🔓 編輯中';
+    btn.classList.add('unlocked');
+    sub.textContent = '本金 1,800萬元 · 年利率 2% · 編輯模式已開啟';
+  } else {
+    btn.textContent = '🔒 編輯';
+    btn.classList.remove('unlocked');
+    sub.textContent = '本金 1,800萬元 · 年利率 2% · 目前為唯讀檢視畫面';
+  }
+}
+
+async function loadStatus(){
+  try{
+    const res = await fetch(API_URL + '?action=get');
+    const json = await res.json();
+    if(json.ok && json.data){ status = JSON.parse(json.data); }
+  }catch(e){ /* no data yet, or network issue: use default */ }
+  if(status.stage1Done === undefined) status.stage1Done = true;
+  loaded = true;
+  render();
+}
+
+async function saveStatus(){
+  document.getElementById('syncStatus').textContent = '同步中...';
+  try{
+    const url = API_URL + '?action=set&pin=' + encodeURIComponent(EDIT_PIN) + '&data=' + encodeURIComponent(JSON.stringify(status));
+    const res = await fetch(url);
+    const json = await res.json();
+    document.getElementById('syncStatus').textContent = json.ok ? '已同步' : '同步失敗（密碼不符）';
+  }catch(e){
+    document.getElementById('syncStatus').textContent = '同步失敗，請檢查網路';
+  }
+}
+
+function toggleStage1(){
+  if(!editMode) return;
+  status.stage1Done = !status.stage1Done;
+  saveStatus();
+  render();
+}
+
+function toggleStage2(period, kind){
+  if(!editMode) return;
+  const key = 's2-'+period+'-'+kind;
+  const cur = status[key] || {paid:false};
+  status[key] = cur.paid ? {paid:false} : {paid:true, paidDate:new Date().toISOString().slice(0,10)};
+  saveStatus();
+  render();
+}
+
+function isOverdue(dateStr, paid){
+  if(paid) return false;
+  const due = new Date(dateStr+'T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  return due < today;
+}
+
+function renderStage1Banner(){
+  const icon = document.getElementById('stage1Icon');
+  const text = document.getElementById('stage1Text');
+  const toggle = document.getElementById('stage1Toggle');
+  toggle.style.display = editMode ? 'block' : 'none';
+  if(status.stage1Done){
+    icon.textContent = '✓';
+    icon.style.background = 'rgba(62,207,142,.15)';
+    icon.style.color = 'var(--good)';
+    text.innerHTML = `<b>第一階段（利息期）已還清</b> — 2025/07–2026/06，共 12 期，合計 360,000 元`;
+    toggle.textContent = '標示為未還清';
+  } else {
+    icon.textContent = '!';
+    icon.style.background = 'rgba(255,107,107,.15)';
+    icon.style.color = 'var(--danger)';
+    text.innerHTML = `<b>第一階段（利息期）尚未還清</b> — 2025/07–2026/06，共 12 期，合計 360,000 元`;
+    toggle.textContent = '標示為已還清';
+  }
+}
+
+function renderCurrentAction(){
+  const box = document.getElementById('currentAction');
+  const s2Next = stage2.find(r=>{
+    const t = status['s2-'+r.period+'-transfer'];
+    const c = status['s2-'+r.period+'-cash'];
+    return !(t&&t.paid) || !(c&&c.paid);
+  });
+
+  if(!s2Next){
+    box.innerHTML = `<div class="all-done-msg">🎉 全部 48 期已繳清，借款已還清</div>`;
+    return;
+  }
+
+  const tPaid = status['s2-'+s2Next.period+'-transfer'] && status['s2-'+s2Next.period+'-transfer'].paid;
+  const cPaid = status['s2-'+s2Next.period+'-cash'] && status['s2-'+s2Next.period+'-cash'].paid;
+  const overdue = isOverdue(s2Next.date, tPaid && cPaid);
+
+  box.innerHTML = `
+    <div class="tag">${overdue?'⚠ 已逾期':'目前應繳'}</div>
+    <div class="period-name">第 ${s2Next.period} 期 · ${fmtDate(s2Next.date)}</div>
+    <div class="period-amount">應繳合計 <b>${fmt(s2Next.payment)}</b>（本金 ${fmt(s2Next.principal)} ＋ 利息 ${fmt(s2Next.interest)}）</div>
+  `;
+
+  if(!editMode){
+    box.innerHTML += `<div class="viewonly-note">（開啟編輯模式後可標記繳款）</div>`;
+    return;
+  }
+
+  const btns = document.createElement('div');
+  btns.className = 'btns';
+  const tBtn = document.createElement('button');
+  tBtn.className = 'mark-btn' + (tPaid?' done':'');
+  tBtn.textContent = tPaid ? '✓ 匯款已完成' : `標記匯款 ${fmt(s2Next.transfer)} 已完成`;
+  tBtn.onclick = ()=>toggleStage2(s2Next.period,'transfer');
+  btns.appendChild(tBtn);
+
+  const cBtn = document.createElement('button');
+  cBtn.className = 'mark-btn cash' + (cPaid?' done':'');
+  cBtn.textContent = cPaid ? '✓ 現金已還' : `標記現金 ${fmt(s2Next.cash)} 已還`;
+  cBtn.onclick = ()=>toggleStage2(s2Next.period,'cash');
+  btns.appendChild(cBtn);
+
+  box.appendChild(btns);
+}
+
+function renderStage2(){
+  const tbody = document.getElementById('scheduleBody');
+  const frag = document.createDocumentFragment();
+  stage2.forEach(r=>{
+    const t = status['s2-'+r.period+'-transfer'] || {paid:false};
+    const c = status['s2-'+r.period+'-cash'] || {paid:false};
+    const fully = t.paid && c.paid;
+    const overdue = isOverdue(r.date, fully);
+
+    const tr = document.createElement('tr');
+    tr.className = fully ? 'paid' : (overdue?'overdue':'');
+    tr.innerHTML = `
+      <td>${r.period}</td>
+      <td>${fmtDate(r.date)}</td>
+      <td class="num">${fmt(r.payment)}</td>
+      <td></td><td></td>
+    `;
+    const tBadge = document.createElement('span');
+    tBadge.className = 'badge ' + (t.paid?'paid':'unpaid') + (editMode?' clickable':'');
+    tBadge.textContent = t.paid ? '✓ 已匯' : '未匯';
+    if(editMode) tBadge.onclick = ()=>toggleStage2(r.period,'transfer');
+    tr.children[3].appendChild(tBadge);
+
+    const cBadge = document.createElement('span');
+    cBadge.className = 'badge ' + (c.paid?'cash-paid':'unpaid') + (editMode?' clickable':'');
+    cBadge.textContent = c.paid ? '✓ 已還' : `未還 ${fmt(r.cash)}`;
+    if(editMode) cBadge.onclick = ()=>toggleStage2(r.period,'cash');
+    tr.children[4].appendChild(cBadge);
+
+    frag.appendChild(tr);
+  });
+  tbody.innerHTML = '';
+  tbody.appendChild(frag);
+}
+
+function render(){
+  renderStage1Banner();
+  renderStage2();
+
+  let paidCount = 0, paidPrincipal = 0, totalRepaid = status.stage1Done ? 360000 : 0;
+
+  stage2.forEach(r=>{
+    const t = status['s2-'+r.period+'-transfer'];
+    const c = status['s2-'+r.period+'-cash'];
+    const tp = t && t.paid, cp = c && c.paid;
+    if(tp) totalRepaid += r.transfer;
+    if(cp){ totalRepaid += r.cash; paidPrincipal += r.principal; }
+    if(tp && cp) paidCount++;
+  });
+
+  const remainingPrincipal = PRINCIPAL - paidPrincipal;
+
+  document.getElementById('statGrid').innerHTML = `
+    <div class="stat"><div class="label">剩餘本金</div><div class="value accent">${fmt(remainingPrincipal)}</div></div>
+    <div class="stat"><div class="label">已完成期數</div><div class="value good">${paidCount} / 48</div></div>
+    <div class="stat"><div class="label">累積已繳總額</div><div class="value">${fmt(totalRepaid)}</div></div>
+  `;
+
+  const pct = Math.round(paidCount/48*100);
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('progressPct').textContent = pct+'%';
+  document.getElementById('progressLeft').textContent = `已完成 ${paidCount} 期`;
+  document.getElementById('progressRight').textContent = `剩餘 ${48-paidCount} 期，預計 ${fmtDate(stage2[stage2.length-1].date)} 繳清`;
+
+  renderCurrentAction();
+}
+
+document.getElementById('lockBtn').onclick = toggleLock;
+document.getElementById('stage1Toggle').onclick = toggleStage1;
+
+// 立即用預設資料畫出畫面，不等待雲端同步，避免視覺上感覺很慢
+render();
+// 再非同步抓取雲端最新狀態並更新
+loadStatus();
+</script>
+</body>
+</html>
