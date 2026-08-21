@@ -69,12 +69,12 @@
     background:var(--accent);color:#fff;border:none;border-radius:8px;
     padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;
   }
-  .mark-btn.cash{background:var(--purple);}
+  .mark-btn.pei{background:var(--purple);}
   .mark-btn.done{background:rgba(62,207,142,0.12);color:var(--good);border:1px solid rgba(62,207,142,.35);cursor:default;}
   .all-done-msg{font-size:14px;color:var(--good);font-weight:600;}
   .viewonly-note{font-size:12px;color:var(--muted);}
 
-  .account-note{font-size:12px;color:var(--muted);}
+  .account-note{font-size:12px;color:var(--muted);line-height:1.9;}
   .account-note b{color:var(--text);}
 
   .section-title{font-size:13px;color:var(--muted);margin:22px 0 8px;}
@@ -91,7 +91,7 @@
   .badge.paid{background:rgba(62,207,142,0.15);color:var(--good);border-color:rgba(62,207,142,.3);}
   .badge.unpaid{background:rgba(138,145,158,0.1);color:var(--muted);border-color:var(--border);}
   .badge.overdue{background:rgba(255,107,107,0.15);color:var(--danger);border-color:rgba(255,107,107,.3);}
-  .badge.cash-paid{background:rgba(180,140,255,0.15);color:var(--purple);border-color:rgba(180,140,255,.35);}
+  .badge.pei-paid{background:rgba(180,140,255,0.15);color:var(--purple);border-color:rgba(180,140,255,.35);}
 
   .table-scroll{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:4px 10px;max-height:520px;overflow:auto;}
   .sync-tag{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px;margin-top:8px;}
@@ -132,14 +132,14 @@
   </div>
 
   <div class="card account-note">
-    每期應繳金額拆為兩部分：<b>30,000 元</b> 匯款至合庫帳戶 <b>0180765308109</b>；其餘領現金保管，累積至 <b>2027/05/01</b> 前直接帶現金當面歸還。
+    每期應繳 390,000 元，分兩筆匯款：<b>290,000 元</b> 匯至徐阿姨合庫帳戶 <b>0180765198303</b>；<b>其餘（約100,000元）</b> 匯至小佩合庫帳戶 <b>0180765308109</b>。
   </div>
 
   <div class="section-title">本息期明細（2026/08/01 起，共 48 期）</div>
   <div class="table-scroll">
     <table id="scheduleTable">
       <thead>
-        <tr><th>期</th><th>日期</th><th class="num">應繳</th><th>匯款 30,000</th><th>現金</th></tr>
+        <tr><th>期</th><th>日期</th><th class="num">應繳</th><th>徐阿姨 290,000</th><th>小佩</th></tr>
       </thead>
       <tbody id="scheduleBody"></tbody>
     </table>
@@ -151,10 +151,10 @@
 <script>
 const stage1 = [{"period": 1, "date": "2025-07-01", "amount": 30000}, {"period": 2, "date": "2025-08-01", "amount": 30000}, {"period": 3, "date": "2025-09-01", "amount": 30000}, {"period": 4, "date": "2025-10-01", "amount": 30000}, {"period": 5, "date": "2025-11-01", "amount": 30000}, {"period": 6, "date": "2025-12-01", "amount": 30000}, {"period": 7, "date": "2026-01-01", "amount": 30000}, {"period": 8, "date": "2026-02-01", "amount": 30000}, {"period": 9, "date": "2026-03-01", "amount": 30000}, {"period": 10, "date": "2026-04-01", "amount": 30000}, {"period": 11, "date": "2026-05-01", "amount": 30000}, {"period": 12, "date": "2026-06-01", "amount": 30000}];
 
-const stage2 = [{"period": 1, "date": "2026-08-01", "stage": "amortizing", "startBalance": 18000000, "interest": 30000, "principal": 360000, "payment": 390000, "endBalance": 17640000, "transfer": 30000, "cash": 360000}, {"period": 2, "date": "2026-09-01", "stage": "amortizing", "startBalance": 17640000, "interest": 29400, "principal": 360600, "payment": 390000, "endBalance": 17279400, "transfer": 30000, "cash": 360000}, {"period": 3, "date": "2026-10-01", "stage": "amortizing", "startBalance": 17279400, "interest": 28799, "principal": 361201, "payment": 390000, "endBalance": 16918199, "transfer": 30000, "cash": 360000}, {"period": 4, "date": "2026-11-01", "stage": "amortizing", "startBalance": 16918199, "interest": 28197, "principal": 361803, "payment": 390000, "endBalance": 16556396, "transfer": 30000, "cash": 360000}, {"period": 5, "date": "2026-12-01", "stage": "amortizing", "startBalance": 16556396, "interest": 27594, "principal": 362406, "payment": 390000, "endBalance": 16193990, "transfer": 30000, "cash": 360000}, {"period": 6, "date": "2027-01-01", "stage": "amortizing", "startBalance": 16193990, "interest": 26990, "principal": 363010, "payment": 390000, "endBalance": 15830980, "transfer": 30000, "cash": 360000}, {"period": 7, "date": "2027-02-01", "stage": "amortizing", "startBalance": 15830980, "interest": 26385, "principal": 363615, "payment": 390000, "endBalance": 15467365, "transfer": 30000, "cash": 360000}, {"period": 8, "date": "2027-03-01", "stage": "amortizing", "startBalance": 15467365, "interest": 25779, "principal": 364221, "payment": 390000, "endBalance": 15103144, "transfer": 30000, "cash": 360000}, {"period": 9, "date": "2027-04-01", "stage": "amortizing", "startBalance": 15103144, "interest": 25172, "principal": 364828, "payment": 390000, "endBalance": 14738316, "transfer": 30000, "cash": 360000}, {"period": 10, "date": "2027-05-01", "stage": "amortizing", "startBalance": 14738316, "interest": 24564, "principal": 365436, "payment": 390000, "endBalance": 14372880, "transfer": 30000, "cash": 360000}, {"period": 11, "date": "2027-06-01", "stage": "amortizing", "startBalance": 14372880, "interest": 23955, "principal": 366045, "payment": 390000, "endBalance": 14006835, "transfer": 30000, "cash": 360000}, {"period": 12, "date": "2027-07-01", "stage": "amortizing", "startBalance": 14006835, "interest": 23345, "principal": 366655, "payment": 390000, "endBalance": 13640180, "transfer": 30000, "cash": 360000}, {"period": 13, "date": "2027-08-01", "stage": "amortizing", "startBalance": 13640180, "interest": 22734, "principal": 367266, "payment": 390000, "endBalance": 13272914, "transfer": 30000, "cash": 360000}, {"period": 14, "date": "2027-09-01", "stage": "amortizing", "startBalance": 13272914, "interest": 22122, "principal": 367878, "payment": 390000, "endBalance": 12905036, "transfer": 30000, "cash": 360000}, {"period": 15, "date": "2027-10-01", "stage": "amortizing", "startBalance": 12905036, "interest": 21508, "principal": 368492, "payment": 390000, "endBalance": 12536544, "transfer": 30000, "cash": 360000}, {"period": 16, "date": "2027-11-01", "stage": "amortizing", "startBalance": 12536544, "interest": 20894, "principal": 369106, "payment": 390000, "endBalance": 12167438, "transfer": 30000, "cash": 360000}, {"period": 17, "date": "2027-12-01", "stage": "amortizing", "startBalance": 12167438, "interest": 20279, "principal": 369721, "payment": 390000, "endBalance": 11797717, "transfer": 30000, "cash": 360000}, {"period": 18, "date": "2028-01-01", "stage": "amortizing", "startBalance": 11797717, "interest": 19663, "principal": 370337, "payment": 390000, "endBalance": 11427380, "transfer": 30000, "cash": 360000}, {"period": 19, "date": "2028-02-01", "stage": "amortizing", "startBalance": 11427380, "interest": 19046, "principal": 370954, "payment": 390000, "endBalance": 11056426, "transfer": 30000, "cash": 360000}, {"period": 20, "date": "2028-03-01", "stage": "amortizing", "startBalance": 11056426, "interest": 18427, "principal": 371573, "payment": 390000, "endBalance": 10684853, "transfer": 30000, "cash": 360000}, {"period": 21, "date": "2028-04-01", "stage": "amortizing", "startBalance": 10684853, "interest": 17808, "principal": 372192, "payment": 390000, "endBalance": 10312661, "transfer": 30000, "cash": 360000}, {"period": 22, "date": "2028-05-01", "stage": "amortizing", "startBalance": 10312661, "interest": 17188, "principal": 372812, "payment": 390000, "endBalance": 9939849, "transfer": 30000, "cash": 360000}, {"period": 23, "date": "2028-06-01", "stage": "amortizing", "startBalance": 9939849, "interest": 16566, "principal": 373434, "payment": 390000, "endBalance": 9566415, "transfer": 30000, "cash": 360000}, {"period": 24, "date": "2028-07-01", "stage": "amortizing", "startBalance": 9566415, "interest": 15944, "principal": 374056, "payment": 390000, "endBalance": 9192359, "transfer": 30000, "cash": 360000}, {"period": 25, "date": "2028-08-01", "stage": "amortizing", "startBalance": 9192359, "interest": 15321, "principal": 374679, "payment": 390000, "endBalance": 8817680, "transfer": 30000, "cash": 360000}, {"period": 26, "date": "2028-09-01", "stage": "amortizing", "startBalance": 8817680, "interest": 14696, "principal": 375304, "payment": 390000, "endBalance": 8442376, "transfer": 30000, "cash": 360000}, {"period": 27, "date": "2028-10-01", "stage": "amortizing", "startBalance": 8442376, "interest": 14071, "principal": 375929, "payment": 390000, "endBalance": 8066447, "transfer": 30000, "cash": 360000}, {"period": 28, "date": "2028-11-01", "stage": "amortizing", "startBalance": 8066447, "interest": 13444, "principal": 376556, "payment": 390000, "endBalance": 7689891, "transfer": 30000, "cash": 360000}, {"period": 29, "date": "2028-12-01", "stage": "amortizing", "startBalance": 7689891, "interest": 12816, "principal": 377184, "payment": 390000, "endBalance": 7312707, "transfer": 30000, "cash": 360000}, {"period": 30, "date": "2029-01-01", "stage": "amortizing", "startBalance": 7312707, "interest": 12188, "principal": 377812, "payment": 390000, "endBalance": 6934895, "transfer": 30000, "cash": 360000}, {"period": 31, "date": "2029-02-01", "stage": "amortizing", "startBalance": 6934895, "interest": 11558, "principal": 378442, "payment": 390000, "endBalance": 6556453, "transfer": 30000, "cash": 360000}, {"period": 32, "date": "2029-03-01", "stage": "amortizing", "startBalance": 6556453, "interest": 10927, "principal": 379073, "payment": 390000, "endBalance": 6177380, "transfer": 30000, "cash": 360000}, {"period": 33, "date": "2029-04-01", "stage": "amortizing", "startBalance": 6177380, "interest": 10296, "principal": 379704, "payment": 390000, "endBalance": 5797676, "transfer": 30000, "cash": 360000}, {"period": 34, "date": "2029-05-01", "stage": "amortizing", "startBalance": 5797676, "interest": 9663, "principal": 380337, "payment": 390000, "endBalance": 5417339, "transfer": 30000, "cash": 360000}, {"period": 35, "date": "2029-06-01", "stage": "amortizing", "startBalance": 5417339, "interest": 9029, "principal": 380971, "payment": 390000, "endBalance": 5036368, "transfer": 30000, "cash": 360000}, {"period": 36, "date": "2029-07-01", "stage": "amortizing", "startBalance": 5036368, "interest": 8394, "principal": 381606, "payment": 390000, "endBalance": 4654762, "transfer": 30000, "cash": 360000}, {"period": 37, "date": "2029-08-01", "stage": "amortizing", "startBalance": 4654762, "interest": 7758, "principal": 382242, "payment": 390000, "endBalance": 4272520, "transfer": 30000, "cash": 360000}, {"period": 38, "date": "2029-09-01", "stage": "amortizing", "startBalance": 4272520, "interest": 7121, "principal": 382879, "payment": 390000, "endBalance": 3889641, "transfer": 30000, "cash": 360000}, {"period": 39, "date": "2029-10-01", "stage": "amortizing", "startBalance": 3889641, "interest": 6483, "principal": 383517, "payment": 390000, "endBalance": 3506124, "transfer": 30000, "cash": 360000}, {"period": 40, "date": "2029-11-01", "stage": "amortizing", "startBalance": 3506124, "interest": 5844, "principal": 384156, "payment": 390000, "endBalance": 3121968, "transfer": 30000, "cash": 360000}, {"period": 41, "date": "2029-12-01", "stage": "amortizing", "startBalance": 3121968, "interest": 5203, "principal": 384797, "payment": 390000, "endBalance": 2737171, "transfer": 30000, "cash": 360000}, {"period": 42, "date": "2030-01-01", "stage": "amortizing", "startBalance": 2737171, "interest": 4562, "principal": 385438, "payment": 390000, "endBalance": 2351733, "transfer": 30000, "cash": 360000}, {"period": 43, "date": "2030-02-01", "stage": "amortizing", "startBalance": 2351733, "interest": 3920, "principal": 386080, "payment": 390000, "endBalance": 1965653, "transfer": 30000, "cash": 360000}, {"period": 44, "date": "2030-03-01", "stage": "amortizing", "startBalance": 1965653, "interest": 3276, "principal": 386724, "payment": 390000, "endBalance": 1578929, "transfer": 30000, "cash": 360000}, {"period": 45, "date": "2030-04-01", "stage": "amortizing", "startBalance": 1578929, "interest": 2632, "principal": 387368, "payment": 390000, "endBalance": 1191561, "transfer": 30000, "cash": 360000}, {"period": 46, "date": "2030-05-01", "stage": "amortizing", "startBalance": 1191561, "interest": 1986, "principal": 388014, "payment": 390000, "endBalance": 803547, "transfer": 30000, "cash": 360000}, {"period": 47, "date": "2030-06-01", "stage": "amortizing", "startBalance": 803547, "interest": 1339, "principal": 388661, "payment": 390000, "endBalance": 414886, "transfer": 30000, "cash": 360000}, {"period": 48, "date": "2030-07-01", "stage": "amortizing", "startBalance": 414886, "interest": 691, "principal": 414886, "payment": 415577, "endBalance": 0, "transfer": 30000, "cash": 385577}];
+const stage2 = [{"period": 1, "date": "2026-08-01", "startBalance": 18000000, "interest": 30000, "principal": 360000, "payment": 390000, "endBalance": 17640000, "xu": 290000, "pei": 100000}, {"period": 2, "date": "2026-09-01", "startBalance": 17640000, "interest": 29400, "principal": 360600, "payment": 390000, "endBalance": 17279400, "xu": 290000, "pei": 100000}, {"period": 3, "date": "2026-10-01", "startBalance": 17279400, "interest": 28799, "principal": 361201, "payment": 390000, "endBalance": 16918199, "xu": 290000, "pei": 100000}, {"period": 4, "date": "2026-11-01", "startBalance": 16918199, "interest": 28197, "principal": 361803, "payment": 390000, "endBalance": 16556396, "xu": 290000, "pei": 100000}, {"period": 5, "date": "2026-12-01", "startBalance": 16556396, "interest": 27594, "principal": 362406, "payment": 390000, "endBalance": 16193990, "xu": 290000, "pei": 100000}, {"period": 6, "date": "2027-01-01", "startBalance": 16193990, "interest": 26990, "principal": 363010, "payment": 390000, "endBalance": 15830980, "xu": 290000, "pei": 100000}, {"period": 7, "date": "2027-02-01", "startBalance": 15830980, "interest": 26385, "principal": 363615, "payment": 390000, "endBalance": 15467365, "xu": 290000, "pei": 100000}, {"period": 8, "date": "2027-03-01", "startBalance": 15467365, "interest": 25779, "principal": 364221, "payment": 390000, "endBalance": 15103144, "xu": 290000, "pei": 100000}, {"period": 9, "date": "2027-04-01", "startBalance": 15103144, "interest": 25172, "principal": 364828, "payment": 390000, "endBalance": 14738316, "xu": 290000, "pei": 100000}, {"period": 10, "date": "2027-05-01", "startBalance": 14738316, "interest": 24564, "principal": 365436, "payment": 390000, "endBalance": 14372880, "xu": 290000, "pei": 100000}, {"period": 11, "date": "2027-06-01", "startBalance": 14372880, "interest": 23955, "principal": 366045, "payment": 390000, "endBalance": 14006835, "xu": 290000, "pei": 100000}, {"period": 12, "date": "2027-07-01", "startBalance": 14006835, "interest": 23345, "principal": 366655, "payment": 390000, "endBalance": 13640180, "xu": 290000, "pei": 100000}, {"period": 13, "date": "2027-08-01", "startBalance": 13640180, "interest": 22734, "principal": 367266, "payment": 390000, "endBalance": 13272914, "xu": 290000, "pei": 100000}, {"period": 14, "date": "2027-09-01", "startBalance": 13272914, "interest": 22122, "principal": 367878, "payment": 390000, "endBalance": 12905036, "xu": 290000, "pei": 100000}, {"period": 15, "date": "2027-10-01", "startBalance": 12905036, "interest": 21508, "principal": 368492, "payment": 390000, "endBalance": 12536544, "xu": 290000, "pei": 100000}, {"period": 16, "date": "2027-11-01", "startBalance": 12536544, "interest": 20894, "principal": 369106, "payment": 390000, "endBalance": 12167438, "xu": 290000, "pei": 100000}, {"period": 17, "date": "2027-12-01", "startBalance": 12167438, "interest": 20279, "principal": 369721, "payment": 390000, "endBalance": 11797717, "xu": 290000, "pei": 100000}, {"period": 18, "date": "2028-01-01", "startBalance": 11797717, "interest": 19663, "principal": 370337, "payment": 390000, "endBalance": 11427380, "xu": 290000, "pei": 100000}, {"period": 19, "date": "2028-02-01", "startBalance": 11427380, "interest": 19046, "principal": 370954, "payment": 390000, "endBalance": 11056426, "xu": 290000, "pei": 100000}, {"period": 20, "date": "2028-03-01", "startBalance": 11056426, "interest": 18427, "principal": 371573, "payment": 390000, "endBalance": 10684853, "xu": 290000, "pei": 100000}, {"period": 21, "date": "2028-04-01", "startBalance": 10684853, "interest": 17808, "principal": 372192, "payment": 390000, "endBalance": 10312661, "xu": 290000, "pei": 100000}, {"period": 22, "date": "2028-05-01", "startBalance": 10312661, "interest": 17188, "principal": 372812, "payment": 390000, "endBalance": 9939849, "xu": 290000, "pei": 100000}, {"period": 23, "date": "2028-06-01", "startBalance": 9939849, "interest": 16566, "principal": 373434, "payment": 390000, "endBalance": 9566415, "xu": 290000, "pei": 100000}, {"period": 24, "date": "2028-07-01", "startBalance": 9566415, "interest": 15944, "principal": 374056, "payment": 390000, "endBalance": 9192359, "xu": 290000, "pei": 100000}, {"period": 25, "date": "2028-08-01", "startBalance": 9192359, "interest": 15321, "principal": 374679, "payment": 390000, "endBalance": 8817680, "xu": 290000, "pei": 100000}, {"period": 26, "date": "2028-09-01", "startBalance": 8817680, "interest": 14696, "principal": 375304, "payment": 390000, "endBalance": 8442376, "xu": 290000, "pei": 100000}, {"period": 27, "date": "2028-10-01", "startBalance": 8442376, "interest": 14071, "principal": 375929, "payment": 390000, "endBalance": 8066447, "xu": 290000, "pei": 100000}, {"period": 28, "date": "2028-11-01", "startBalance": 8066447, "interest": 13444, "principal": 376556, "payment": 390000, "endBalance": 7689891, "xu": 290000, "pei": 100000}, {"period": 29, "date": "2028-12-01", "startBalance": 7689891, "interest": 12816, "principal": 377184, "payment": 390000, "endBalance": 7312707, "xu": 290000, "pei": 100000}, {"period": 30, "date": "2029-01-01", "startBalance": 7312707, "interest": 12188, "principal": 377812, "payment": 390000, "endBalance": 6934895, "xu": 290000, "pei": 100000}, {"period": 31, "date": "2029-02-01", "startBalance": 6934895, "interest": 11558, "principal": 378442, "payment": 390000, "endBalance": 6556453, "xu": 290000, "pei": 100000}, {"period": 32, "date": "2029-03-01", "startBalance": 6556453, "interest": 10927, "principal": 379073, "payment": 390000, "endBalance": 6177380, "xu": 290000, "pei": 100000}, {"period": 33, "date": "2029-04-01", "startBalance": 6177380, "interest": 10296, "principal": 379704, "payment": 390000, "endBalance": 5797676, "xu": 290000, "pei": 100000}, {"period": 34, "date": "2029-05-01", "startBalance": 5797676, "interest": 9663, "principal": 380337, "payment": 390000, "endBalance": 5417339, "xu": 290000, "pei": 100000}, {"period": 35, "date": "2029-06-01", "startBalance": 5417339, "interest": 9029, "principal": 380971, "payment": 390000, "endBalance": 5036368, "xu": 290000, "pei": 100000}, {"period": 36, "date": "2029-07-01", "startBalance": 5036368, "interest": 8394, "principal": 381606, "payment": 390000, "endBalance": 4654762, "xu": 290000, "pei": 100000}, {"period": 37, "date": "2029-08-01", "startBalance": 4654762, "interest": 7758, "principal": 382242, "payment": 390000, "endBalance": 4272520, "xu": 290000, "pei": 100000}, {"period": 38, "date": "2029-09-01", "startBalance": 4272520, "interest": 7121, "principal": 382879, "payment": 390000, "endBalance": 3889641, "xu": 290000, "pei": 100000}, {"period": 39, "date": "2029-10-01", "startBalance": 3889641, "interest": 6483, "principal": 383517, "payment": 390000, "endBalance": 3506124, "xu": 290000, "pei": 100000}, {"period": 40, "date": "2029-11-01", "startBalance": 3506124, "interest": 5844, "principal": 384156, "payment": 390000, "endBalance": 3121968, "xu": 290000, "pei": 100000}, {"period": 41, "date": "2029-12-01", "startBalance": 3121968, "interest": 5203, "principal": 384797, "payment": 390000, "endBalance": 2737171, "xu": 290000, "pei": 100000}, {"period": 42, "date": "2030-01-01", "startBalance": 2737171, "interest": 4562, "principal": 385438, "payment": 390000, "endBalance": 2351733, "xu": 290000, "pei": 100000}, {"period": 43, "date": "2030-02-01", "startBalance": 2351733, "interest": 3920, "principal": 386080, "payment": 390000, "endBalance": 1965653, "xu": 290000, "pei": 100000}, {"period": 44, "date": "2030-03-01", "startBalance": 1965653, "interest": 3276, "principal": 386724, "payment": 390000, "endBalance": 1578929, "xu": 290000, "pei": 100000}, {"period": 45, "date": "2030-04-01", "startBalance": 1578929, "interest": 2632, "principal": 387368, "payment": 390000, "endBalance": 1191561, "xu": 290000, "pei": 100000}, {"period": 46, "date": "2030-05-01", "startBalance": 1191561, "interest": 1986, "principal": 388014, "payment": 390000, "endBalance": 803547, "xu": 290000, "pei": 100000}, {"period": 47, "date": "2030-06-01", "startBalance": 803547, "interest": 1339, "principal": 388661, "payment": 390000, "endBalance": 414886, "xu": 290000, "pei": 100000}, {"period": 48, "date": "2030-07-01", "startBalance": 414886, "interest": 691, "principal": 414886, "payment": 415577, "endBalance": 0, "xu": 290000, "pei": 125577}];
 
 const PRINCIPAL = 18000000;
-const EDIT_PIN = '0701'; // 編輯密碼，跟 Apps Script 裡的 PIN 要一致
+const EDIT_PIN = '0701';
 const API_URL = 'https://script.google.com/macros/s/AKfycbz04PwUk-qyD-cs-ltIyw07MKaor_gqCY0GKe3JigtbLf-zUMHBLL6oaFL9rcJ_z9Ek/exec';
 
 function fmt(n){ return 'NT$' + Math.round(n).toLocaleString('en-US'); }
@@ -203,7 +203,7 @@ async function loadStatus(){
     const res = await fetch(API_URL + '?action=get');
     const json = await res.json();
     if(json.ok && json.data){ status = JSON.parse(json.data); }
-  }catch(e){ /* no data yet, or network issue: use default */ }
+  }catch(e){ /* no data yet, or network issue */ }
   if(status.stage1Done === undefined) status.stage1Done = true;
   loaded = true;
   render();
@@ -267,9 +267,9 @@ function renderStage1Banner(){
 function renderCurrentAction(){
   const box = document.getElementById('currentAction');
   const s2Next = stage2.find(r=>{
-    const t = status['s2-'+r.period+'-transfer'];
-    const c = status['s2-'+r.period+'-cash'];
-    return !(t&&t.paid) || !(c&&c.paid);
+    const x = status['s2-'+r.period+'-xu'];
+    const p = status['s2-'+r.period+'-pei'];
+    return !(x&&x.paid) || !(p&&p.paid);
   });
 
   if(!s2Next){
@@ -277,9 +277,9 @@ function renderCurrentAction(){
     return;
   }
 
-  const tPaid = status['s2-'+s2Next.period+'-transfer'] && status['s2-'+s2Next.period+'-transfer'].paid;
-  const cPaid = status['s2-'+s2Next.period+'-cash'] && status['s2-'+s2Next.period+'-cash'].paid;
-  const overdue = isOverdue(s2Next.date, tPaid && cPaid);
+  const xPaid = status['s2-'+s2Next.period+'-xu'] && status['s2-'+s2Next.period+'-xu'].paid;
+  const pPaid = status['s2-'+s2Next.period+'-pei'] && status['s2-'+s2Next.period+'-pei'].paid;
+  const overdue = isOverdue(s2Next.date, xPaid && pPaid);
 
   box.innerHTML = `
     <div class="tag">${overdue?'⚠ 已逾期':'目前應繳'}</div>
@@ -294,17 +294,17 @@ function renderCurrentAction(){
 
   const btns = document.createElement('div');
   btns.className = 'btns';
-  const tBtn = document.createElement('button');
-  tBtn.className = 'mark-btn' + (tPaid?' done':'');
-  tBtn.textContent = tPaid ? '✓ 匯款已完成' : `標記匯款 ${fmt(s2Next.transfer)} 已完成`;
-  tBtn.onclick = ()=>toggleStage2(s2Next.period,'transfer');
-  btns.appendChild(tBtn);
+  const xBtn = document.createElement('button');
+  xBtn.className = 'mark-btn' + (xPaid?' done':'');
+  xBtn.textContent = xPaid ? '✓ 徐阿姨已匯' : `標記徐阿姨 ${fmt(s2Next.xu)} 已匯`;
+  xBtn.onclick = ()=>toggleStage2(s2Next.period,'xu');
+  btns.appendChild(xBtn);
 
-  const cBtn = document.createElement('button');
-  cBtn.className = 'mark-btn cash' + (cPaid?' done':'');
-  cBtn.textContent = cPaid ? '✓ 現金已還' : `標記現金 ${fmt(s2Next.cash)} 已還`;
-  cBtn.onclick = ()=>toggleStage2(s2Next.period,'cash');
-  btns.appendChild(cBtn);
+  const pBtn = document.createElement('button');
+  pBtn.className = 'mark-btn pei' + (pPaid?' done':'');
+  pBtn.textContent = pPaid ? '✓ 小佩已匯' : `標記小佩 ${fmt(s2Next.pei)} 已匯`;
+  pBtn.onclick = ()=>toggleStage2(s2Next.period,'pei');
+  btns.appendChild(pBtn);
 
   box.appendChild(btns);
 }
@@ -313,9 +313,9 @@ function renderStage2(){
   const tbody = document.getElementById('scheduleBody');
   const frag = document.createDocumentFragment();
   stage2.forEach(r=>{
-    const t = status['s2-'+r.period+'-transfer'] || {paid:false};
-    const c = status['s2-'+r.period+'-cash'] || {paid:false};
-    const fully = t.paid && c.paid;
+    const x = status['s2-'+r.period+'-xu'] || {paid:false};
+    const p = status['s2-'+r.period+'-pei'] || {paid:false};
+    const fully = x.paid && p.paid;
     const overdue = isOverdue(r.date, fully);
 
     const tr = document.createElement('tr');
@@ -326,17 +326,17 @@ function renderStage2(){
       <td class="num">${fmt(r.payment)}</td>
       <td></td><td></td>
     `;
-    const tBadge = document.createElement('span');
-    tBadge.className = 'badge ' + (t.paid?'paid':'unpaid') + (editMode?' clickable':'');
-    tBadge.textContent = t.paid ? '✓ 已匯' : '未匯';
-    if(editMode) tBadge.onclick = ()=>toggleStage2(r.period,'transfer');
-    tr.children[3].appendChild(tBadge);
+    const xBadge = document.createElement('span');
+    xBadge.className = 'badge ' + (x.paid?'paid':'unpaid') + (editMode?' clickable':'');
+    xBadge.textContent = x.paid ? '✓ 已匯' : '未匯';
+    if(editMode) xBadge.onclick = ()=>toggleStage2(r.period,'xu');
+    tr.children[3].appendChild(xBadge);
 
-    const cBadge = document.createElement('span');
-    cBadge.className = 'badge ' + (c.paid?'cash-paid':'unpaid') + (editMode?' clickable':'');
-    cBadge.textContent = c.paid ? '✓ 已還' : `未還 ${fmt(r.cash)}`;
-    if(editMode) cBadge.onclick = ()=>toggleStage2(r.period,'cash');
-    tr.children[4].appendChild(cBadge);
+    const pBadge = document.createElement('span');
+    pBadge.className = 'badge ' + (p.paid?'pei-paid':'unpaid') + (editMode?' clickable':'');
+    pBadge.textContent = p.paid ? '✓ 已匯' : `未匯 ${fmt(r.pei)}`;
+    if(editMode) pBadge.onclick = ()=>toggleStage2(r.period,'pei');
+    tr.children[4].appendChild(pBadge);
 
     frag.appendChild(tr);
   });
@@ -351,12 +351,12 @@ function render(){
   let paidCount = 0, paidPrincipal = 0, totalRepaid = status.stage1Done ? 360000 : 0;
 
   stage2.forEach(r=>{
-    const t = status['s2-'+r.period+'-transfer'];
-    const c = status['s2-'+r.period+'-cash'];
-    const tp = t && t.paid, cp = c && c.paid;
-    if(tp) totalRepaid += r.transfer;
-    if(cp){ totalRepaid += r.cash; paidPrincipal += r.principal; }
-    if(tp && cp) paidCount++;
+    const x = status['s2-'+r.period+'-xu'];
+    const p = status['s2-'+r.period+'-pei'];
+    const xp = x && x.paid, pp = p && p.paid;
+    if(xp) totalRepaid += r.xu;
+    if(pp){ totalRepaid += r.pei; }
+    if(xp && pp){ paidCount++; paidPrincipal += r.principal; }
   });
 
   const remainingPrincipal = PRINCIPAL - paidPrincipal;
@@ -379,9 +379,7 @@ function render(){
 document.getElementById('lockBtn').onclick = toggleLock;
 document.getElementById('stage1Toggle').onclick = toggleStage1;
 
-// 立即用預設資料畫出畫面，不等待雲端同步，避免視覺上感覺很慢
 render();
-// 再非同步抓取雲端最新狀態並更新
 loadStatus();
 </script>
 </body>
